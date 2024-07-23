@@ -16,12 +16,12 @@ type DialogsProps = {
   description?: string;
 };
 
-// Styled button components
+
 const CustomButton = styled(Button)(({ theme }) => ({
-  backgroundColor: '#d3d3d3', // Light gray
+  backgroundColor: '#d3d3d3', 
   color: 'black',
   '&:hover': {
-    backgroundColor: '#a9a9a9', // Dark gray
+    backgroundColor: '#a9a9a9', 
   },
 }));
 
@@ -50,8 +50,15 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title
         component: 'form',
         onSubmit: handleSubmit,
       }}
+      sx={{
+        '& .MuiDialog-paper': {
+          width: '500px', // Adjust width
+          height: '400px', // Adjust height
+          maxWidth: 'none', // Ensure the width is not restricted by the maxWidth property
+        },
+      }}
     >
-      <DialogTitle>{heading || 'Add Task'}</DialogTitle>
+      <DialogTitle>{heading }</DialogTitle>
       <DialogContent>
         <TextField
           margin="dense"
@@ -61,7 +68,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title
           type="text"
           fullWidth
           variant="standard"
-          value={formValues.title}
+          value={title}
           onChange={handleChange}
         />
         <TextField
@@ -72,7 +79,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title
           type="text"
           fullWidth
           variant="standard"
-          value={formValues.description}
+          value={description}
           onChange={handleChange}
         />
       </DialogContent>

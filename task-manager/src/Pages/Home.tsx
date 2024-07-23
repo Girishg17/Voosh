@@ -4,12 +4,12 @@ import Navbar from '../Components/NavBar';
 import { useNavigate } from 'react-router-dom';
 import Dialogs from '../Components/Dialog';
 import { AddTaskButton, CardContainer } from '../Components/styles';
-
+import DialogViews from '../Components/DialogView';
 
 // Define types for tasks
 type Task = {
     id: string;
-    content: string;
+    description: string;
 };
 
 type TaskColumns = {
@@ -18,15 +18,15 @@ type TaskColumns = {
 
 // Initial data
 const initialData: TaskColumns = {
-    'to-do': [
-        { id: 'task-1', content: 'Task 1' },
-        { id: 'task-2', content: 'Task 2' },
+    'TODO': [
+        { id: 'task-1', description: 'Task 1' },
+        { id: 'task-2', description: 'Task 2' },
     ],
-    'in-progress': [
-        { id: 'task-3', content: 'Task 3' },
+    'IN PROGRESS': [
+        { id: 'task-3', description: 'Task 3' },
     ],
-    'done': [
-        { id: 'task-4', content: 'Task 4' },
+    'DONE': [
+        { id: 'task-4', description: 'Task 4' },
     ],
 };
 
@@ -34,6 +34,8 @@ const Home: React.FC = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [sortOption, setSortOption] = useState('recent');
     const [tasks, setTasks] = useState<TaskColumns>(initialData);
+    const [dialogData, setDialogData] = useState<{ title: string; description: string } | null>(null);
+    const [dialogview,setDialogView]=useState(false);
 
     const navigate = useNavigate();
 
@@ -42,11 +44,23 @@ const Home: React.FC = () => {
     };
 
     const handleAddTaskClick = () => {
+        setDialogData({ title: '', description: '' });
         setDialogOpen(true);
     };
 
     const handleCloseDialog = () => {
         setDialogOpen(false);
+        setDialogData(null);
+    };
+
+    const handleCloseDialogView = () => {
+      setDialogView(false);
+      setDialogData(null);
+  };
+
+    const handleSave = (data: { title: string; description: string }) => {
+        // Handle save logic here
+        console.log(data);
     };
 
     const handleSortChange = (event: SelectChangeEvent<string>) => {
@@ -80,12 +94,20 @@ const Home: React.FC = () => {
         setTasks(updatedTasks);
     };
 
-    const handleEdit = (id: string) => {
-        // Add your edit logic here
+    const handleViewDetails = (id: string) => {
+      const task = Object.values(tasks).flat().find(t => t.id === id);
+      if (task) {
+          setDialogData({ title: task.id, description: task.description });
+          setDialogView(true);
+      }
     };
 
-    const handleViewDetails = (id: string) => {
-        // Add your view details logic here
+    const handleEdit = (id: string) => {
+        const task = Object.values(tasks).flat().find(t => t.id === id);
+        if (task) {
+            setDialogData({ title: task.id, description: task.description });
+            setDialogOpen(true);
+        }
     };
 
     return (
@@ -101,7 +123,16 @@ const Home: React.FC = () => {
             />
             <AddTaskButton onClick={handleAddTaskClick}>Add Task</AddTaskButton>
 
-            <Dialogs open={dialogOpen} onClose={handleCloseDialog} onSave={handleCloseDialog} />
+            <Dialogs
+                open={dialogOpen}
+                onClose={handleCloseDialog}
+                onSave={handleSave}
+                heading={dialogData ? 'Edit Task' : 'Add Task'}
+                title={dialogData?.title}
+                description={dialogData?.description}
+            />
+
+            <DialogViews open={dialogview} heading='Task Details' title={dialogData?.title} description={dialogData?.description} onClose={handleCloseDialogView}/>
 
             <CardContainer>
                 <Card>
@@ -114,7 +145,7 @@ const Home: React.FC = () => {
                                 
                                 <label>
                                     Sort By:
-                                    <select name="selectedsort" value={sortOption}  style={{ marginLeft: '7px' }}>
+                                    <select name="selectedsort" value={sortOption} style={{ marginLeft: '7px' }}>
                                         <option value="recent">Recent</option>
                                     </select>
                                 </label>
@@ -156,17 +187,16 @@ const Home: React.FC = () => {
                                 key={task.id}
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, task)}
-                                sx={{ marginBottom: '10px', cursor: 'move', position: 'relative' ,backgroundColor:'#99ccff',height:'150px'}}
+                                sx={{ marginBottom: '10px', cursor: 'move', position: 'relative', backgroundColor: '#99ccff', height: '150px' }}
                             >
                                 <CardContent>
                                     <Box display="flex" flexDirection="column" sx={{ height: '100%' }}>
                                         <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>{task.content}</Typography>
-                                          
+                                            <Typography variant="body1" sx={{ flex: 1 }}>{task.id}</Typography>
                                         </Box>
+
                                         <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
-                                            <Typography variant="body1" sx={{ flex: 1 }}>{task.content}</Typography>
-                                            
+                                            <Typography variant="body1" sx={{ flex: 1 }}>{task.description}</Typography>
                                         </Box>
                                         <Box
                                             display="flex"
