@@ -25,14 +25,18 @@ const Login: React.FC = () => {
     setActiveButton('login');
     setLoginButtonColor('white');
     setSignupButtonColor('#0067cc');
+   
   };
 
   const handleSignupClick = () => {
     setActiveButton('signup');
     setLoginButtonColor('#0067cc');
     setSignupButtonColor('white');
-    navigate('/signup');
   };
+
+  const handleLogin=()=>{
+    navigate('/home');
+  }
 
   return (
     <div>
@@ -69,7 +73,7 @@ const Login: React.FC = () => {
               fullWidth
               margin="normal"
             />
-            <LoginButton variant="contained">Login</LoginButton>
+            <LoginButton variant="contained" onClick={handleLogin}>Login</LoginButton>
             <Box display="flex" alignItems="center" marginTop="10px">
               <Typography variant="body2" color="black">Don't have an account?</Typography>
               <SignupLink variant="body2" onClick={handleSignupClick}>

@@ -1,6 +1,6 @@
 // src/Components/styles.tsx
 
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Select, TextField, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 
 export const LoginCard = styled(Box)({
@@ -69,4 +69,28 @@ export const LoginLink = styled(Typography)({
   '&:hover': {
     textDecoration: 'underline',
   },
+});
+
+export const AddTaskButton = styled(Button)({
+  backgroundColor: '#0067cc',
+  color: 'white',
+  marginTop: '20px',
+  marginLeft: '20px',
+  '&:hover': {
+    backgroundColor: '#005bb5',
+  },
+});
+
+export const CardContainer = styled('div')({
+  marginTop: '20px',
+  marginBottom:'20px'
+  
+});
+
+export const SearchInput = styled(TextField)({
+  marginBottom: '16px',
+});
+
+export const SortBySelect = styled(Select)({
+  minWidth: '120px',
 });
