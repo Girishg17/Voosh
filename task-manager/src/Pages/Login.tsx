@@ -13,12 +13,16 @@ import {
   SignupButton, 
   LoginLink 
 } from '../Components/styles';
+import { login, register } from '../utils/api';
 
 const Login: React.FC = () => {
   const [activeButton, setActiveButton] = useState('login');
   const [loginButtonColor, setLoginButtonColor] = useState('white');
   const [signupButtonColor, setSignupButtonColor] = useState('blue');
-  
+  const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const navigate = useNavigate(); 
 
   const handleLoginClick = () => {
@@ -34,10 +38,27 @@ const Login: React.FC = () => {
     setSignupButtonColor('white');
   };
 
-  const handleLogin=()=>{
-    navigate('/home');
-  }
+  const handleLogin = async () => {
+    try {
+      const data = await login(email, password);
+      localStorage.setItem('token', data.token);
+      navigate('/home');
+    } catch (err:any) {
+      setError(err.message);
+    }
+  };
 
+  const handleSignup = async () => {
+    try {
+      console.log("coming");
+      console.log("the fiels",name,email,password);
+      const data = await register(name, email, password);
+      localStorage.setItem('token', data.token);
+      navigate('/home');
+    } catch (err:any) {
+      setError(err.message);
+    }
+  };
   return (
     <div>
       <Navbar
@@ -65,6 +86,7 @@ const Login: React.FC = () => {
               variant="outlined"
               fullWidth
               margin="normal"
+              onChange={(e) => setEmail(e.target.value)}
             />
             <TextField
               label="Password"
@@ -72,6 +94,7 @@ const Login: React.FC = () => {
               type="password"
               fullWidth
               margin="normal"
+              onChange={(e) => setPassword(e.target.value)}
             />
             <LoginButton variant="contained" onClick={handleLogin}>Login</LoginButton>
             <Box display="flex" alignItems="center" marginTop="10px">
@@ -94,6 +117,7 @@ const Login: React.FC = () => {
               variant="outlined"
               fullWidth
               margin="normal"
+              onChange={(e)=>setName(e.target.value)}
             />
             <TextField
               label="Last Name"
@@ -106,6 +130,7 @@ const Login: React.FC = () => {
               variant="outlined"
               fullWidth
               margin="normal"
+              onChange={(e) => setEmail(e.target.value)}
             />
             <TextField
               label="Password"
@@ -113,6 +138,7 @@ const Login: React.FC = () => {
               type="password"
               fullWidth
               margin="normal"
+              onChange={(e) => setPassword(e.target.value)}
             />
             <TextField
               label="Confirm Password"
@@ -121,7 +147,7 @@ const Login: React.FC = () => {
               fullWidth
               margin="normal"
             />
-            <SignupButton variant="contained">Signup</SignupButton>
+            <SignupButton variant="contained" onClick={handleSignup}>Signup</SignupButton>
             <Box display="flex" alignItems="center" marginTop="10px">
               <Typography variant="body2" color="black">Already have an account?</Typography>
               <LoginLink variant="body2" onClick={handleLoginClick}>
