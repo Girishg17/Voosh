@@ -16,7 +16,6 @@ type DialogsProps = {
   description?: string;
 };
 
-
 const CustomButton = styled(Button)(({ theme }) => ({
   backgroundColor: '#d3d3d3', 
   color: 'black',
@@ -58,7 +57,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title
         },
       }}
     >
-      <DialogTitle>{heading }</DialogTitle>
+      <DialogTitle>{heading}</DialogTitle>
       <DialogContent>
         <TextField
           margin="dense"
@@ -68,7 +67,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title
           type="text"
           fullWidth
           variant="standard"
-          value={title}
+          value={formValues.title} // Use formValues for value
           onChange={handleChange}
         />
         <TextField
@@ -79,7 +78,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title
           type="text"
           fullWidth
           variant="standard"
-          value={description}
+          value={formValues.description} // Use formValues for value
           onChange={handleChange}
         />
       </DialogContent>

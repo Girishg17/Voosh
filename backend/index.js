@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
 const userRoutes = require('./routes/userRouter');
-
+// const taskRoutes = require('./routes/taskRouter');
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -21,6 +21,10 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Use routes
 app.use('/api/users', userRoutes);
+// server.js or app.js
+
+// app.use('/api/tasks', taskRoutes);
+
 
 // Start the server
 const PORT = process.env.PORT || 5000;

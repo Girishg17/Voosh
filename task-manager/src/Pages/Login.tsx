@@ -1,9 +1,7 @@
-// src/Pages/Login.tsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import Navbar from '../Components/NavBar';
-import { Container, TextField, Typography, Box } from '@mui/material';
+import { Container, TextField, Typography, Box, Button } from '@mui/material';
 import { 
   LoginCard, 
   LoginButton, 
@@ -23,13 +21,14 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [secondName, setSecondName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate(); 
 
   const handleLoginClick = () => {
     setActiveButton('login');
     setLoginButtonColor('white');
     setSignupButtonColor('#0067cc');
-   
   };
 
   const handleSignupClick = () => {
@@ -41,24 +40,35 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     try {
       const data = await login(email, password);
+      console.log("login token",data.token);
+      console.log("login userid",data.id);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userid', data.id);
       navigate('/home');
-    } catch (err:any) {
+    } catch (err: any) {
       setError(err.message);
     }
   };
 
   const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
-      console.log("coming");
-      console.log("the fiels",name,email,password);
-      const data = await register(name, email, password);
+      
+      const data = await register(name,secondName,email, password);
+      console.log("signup token",data.token);
+      console.log("signuop userid",data.id);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userid', data.id);
       navigate('/home');
-    } catch (err:any) {
+    } catch (err: any) {
       setError(err.message);
     }
   };
+
   return (
     <div>
       <Navbar
@@ -96,6 +106,7 @@ const Login: React.FC = () => {
               margin="normal"
               onChange={(e) => setPassword(e.target.value)}
             />
+            {error && <Typography color="error" variant="body2">{error}</Typography>}
             <LoginButton variant="contained" onClick={handleLogin}>Login</LoginButton>
             <Box display="flex" alignItems="center" marginTop="10px">
               <Typography variant="body2" color="black">Don't have an account?</Typography>
@@ -117,13 +128,14 @@ const Login: React.FC = () => {
               variant="outlined"
               fullWidth
               margin="normal"
-              onChange={(e)=>setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
             />
             <TextField
               label="Last Name"
               variant="outlined"
               fullWidth
               margin="normal"
+              onChange={(e) => setSecondName(e.target.value)}
             />
             <TextField
               label="Email"
@@ -146,7 +158,9 @@ const Login: React.FC = () => {
               type="password"
               fullWidth
               margin="normal"
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
+            {error && <Typography color="error" variant="body2">{error}</Typography>}
             <SignupButton variant="contained" onClick={handleSignup}>Signup</SignupButton>
             <Box display="flex" alignItems="center" marginTop="10px">
               <Typography variant="body2" color="black">Already have an account?</Typography>
