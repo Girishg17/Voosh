@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import Dialogs from '../Components/Dialog';
 import { AddTaskButton, CardContainer } from '../Components/styles';
 import DialogViews from '../Components/DialogView';
-import { deleteTask, fetchTasks, saveTask } from '../utils/api';
+import { deleteTask, fetchTasks, puttsask, saveTask, updateTasks } from '../utils/api';
+import Dialogedit from '../Components/Dialogedit';
+
 
 // Define types for tasks
 type Task = {
@@ -21,7 +23,7 @@ type TaskColumns = {
 // Initial data
 const initialData: TaskColumns = {
   'TODO': [],
-  'IN PROGRESS': [],
+  'INPROGRESS': [],
   'DONE': [],
 };
 
@@ -31,7 +33,7 @@ const Home: React.FC = () => {
   const [tasks, setTasks] = useState<TaskColumns>(initialData);
   const [dialogData, setDialogData] = useState<{ title: string; description: string } | null>(null);
   const [dialogview, setDialogView] = useState(false);
-  const [editedTaskId, setEditedTaskId] = useState<string | null>(null);
+  const [edit,setedit]=useState(false);
 
   const navigate = useNavigate();
 
@@ -42,15 +44,11 @@ const Home: React.FC = () => {
   };
 
   const handleAddTaskClick = () => {
-    setDialogData({ title: '', description: '' });
-    setEditedTaskId(null); // Reset the edited task ID
     setDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
-    setDialogData(null);
-    setEditedTaskId(null); // Reset the edited task ID
   };
 
   const handleCloseDialogView = () => {
@@ -59,32 +57,26 @@ const Home: React.FC = () => {
   };
 
   const handleSave = async (data: { title: string; description: string }) => {
+    console.log("handle save with srrnng",data.title);
     const userId = localStorage.getItem('userid');
     if (!userId) {
       console.error('User ID not found');
       return;
     }
 
-    const newTask = { id: editedTaskId ? editedTaskId : Date.now().toString(), title: data.title, description: data.description };
+    const newTask = { id:  Date.now().toString(), title: data.title, description: data.description };
+
 
     try {
-      if (editedTaskId) {
-        // Edit existing task
-        const updatedTasks = { ...tasks };
-        Object.keys(updatedTasks).forEach(key => {
-          updatedTasks[key] = updatedTasks[key].map(task => task.id === editedTaskId ? newTask : task);
-        });
-        setTasks(updatedTasks);
-      } else {
-        // Add new task
         await saveTask(userId, 'TODO', newTask);
         setTasks(prevTasks => ({ ...prevTasks, 'TODO': [...prevTasks['TODO'], newTask] }));
-      }
+      // }
 
       handleCloseDialog();
     } catch (error) {
       console.error('Error saving task:', error);
     }
+    setDialogData(null);
   };
 
   const handleSortChange = (event: SelectChangeEvent<string>) => {
@@ -95,20 +87,58 @@ const Home: React.FC = () => {
     e.dataTransfer.setData('text/plain', item.id);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, column: string) => {
+  // const handleDrop = (e: React.DragEvent<HTMLDivElement>, column: string) => {
+  //   const itemId = e.dataTransfer.getData('text/plain');
+  //   if (!itemId) return;
+
+  //   const draggedItem = Object.values(tasks).flat().find(task => task.id === itemId);
+  //   if (!draggedItem) return;
+
+  //   const updatedTasks = { ...tasks };
+  //   Object.keys(updatedTasks).forEach(key => {
+  //     updatedTasks[key] = updatedTasks[key].filter(task => task.id !== itemId);
+  //   });
+  //   updatedTasks[column].push(draggedItem);
+  //   setTasks(updatedTasks);
+  //   console.log("column",column);
+  //   const userId = localStorage.getItem('userid');
+  //   console.log("dragged draggeditem",draggedItem);
+  //   // saveTask(userId, column, draggedItem);
+    
+  // };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, column: string) => {
     const itemId = e.dataTransfer.getData('text/plain');
     if (!itemId) return;
-
+  
     const draggedItem = Object.values(tasks).flat().find(task => task.id === itemId);
     if (!draggedItem) return;
-
+  
     const updatedTasks = { ...tasks };
     Object.keys(updatedTasks).forEach(key => {
       updatedTasks[key] = updatedTasks[key].filter(task => task.id !== itemId);
     });
     updatedTasks[column].push(draggedItem);
     setTasks(updatedTasks);
+  
+    const userId = localStorage.getItem('userid');
+    if (!userId) {
+      console.error('User ID not found');
+      return;
+    }
+  
+    const updatedTask = { ...draggedItem, column };
+    
+    try {
+      await puttsask(userId, column, updatedTask);
+    } catch (error) {
+      console.error('Error updating task on the backend:', error);
+    }
+    
+    console.log("Dragged item updated:", updatedTask);
   };
+  
+  
 
   const handleDelete = async (id: string) => {
     const userId = localStorage.getItem('userid');
@@ -136,26 +166,22 @@ const Home: React.FC = () => {
       setDialogView(true);
     }
   };
+  const handleSaveEdit=(data: { title: string; description: string })=>{
+    setDialogData({ title:data.title, description: data.description });
+    setedit(false);
+    
+    console.log("on save edit",data.title);
+  }
 
   const handleEdit = (id: string) => {
     const task = Object.values(tasks).flat().find(t => t.id === id);
-    console.log("handle edit",task);
     if (task) {
       setDialogData({ title: task.title, description: task.description });
-      setEditedTaskId(id); // Set the edited task ID
     }
-    setDialogOpen(true);
+    setedit(true);
   };
 
-  // Use effect to update dialogData whenever editedTaskId changes
-  useEffect(() => {
-    if (editedTaskId) {
-      const task = Object.values(tasks).flat().find(t => t.id === editedTaskId);
-      if (task) {
-        setDialogData({ title: task.title, description: task.description });
-      }
-    }
-  }, [editedTaskId, tasks]);
+
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -169,7 +195,7 @@ const Home: React.FC = () => {
         const fetchedTasks = await fetchTasks(userId);
         const formattedTasks = {
           'TODO': Array.isArray(fetchedTasks['TODO']) ? fetchedTasks['TODO'] : [],
-          'IN PROGRESS': Array.isArray(fetchedTasks['IN PROGRESS']) ? fetchedTasks['IN PROGRESS'] : [],
+          'INPROGRESS': Array.isArray(fetchedTasks['INPROGRESS']) ? fetchedTasks['INPROGRESS'] : [],
           'DONE': Array.isArray(fetchedTasks['DONE']) ? fetchedTasks['DONE'] : [],
         };
         
@@ -199,13 +225,12 @@ const Home: React.FC = () => {
         open={dialogOpen}
         onClose={handleCloseDialog}
         onSave={handleSave}
-        heading={dialogData ? 'Edit Task' : 'Add Task'}
-        title={dialogData?.title}
-        description={dialogData?.description}
+  
       />
+      <Dialogedit open={edit} onClose={()=>{setedit(false)}} onSave={ handleSaveEdit} heading='Edit Task' title={dialogData?.title} description={dialogData?.description}/>
 
       <DialogViews open={dialogview} heading='Task Details' title={dialogData?.title} description={dialogData?.description} onClose={handleCloseDialogView} />
-
+      {/* <Dialogedit open={} /> */}
       <CardContainer>
         <Card>
           <CardContent>

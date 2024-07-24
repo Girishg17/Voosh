@@ -11,6 +11,9 @@ type DialogsProps = {
   open: boolean;
   onClose: () => void;
   onSave: (data: { title: string; description: string }) => void;
+  heading?: string;
+  title?: string;
+  description?: string;
 };
 
 const CustomButton = styled(Button)(({ theme }) => ({
@@ -21,21 +24,25 @@ const CustomButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
-  const [title, setTitle] = React.useState('');
-  const [description, setDescription] = React.useState('');
+const Dialogedit: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title = '', description = '' }) => {
+  const [formValues, setFormValues] = React.useState({title  ,description});
 
-  // Reset form values when dialog is opened
+  // Update form values when props change
   React.useEffect(() => {
-    if (open) {
-      setTitle('');
-      setDescription('');
-    }
-  }, [open]);
+    setFormValues({ title, description });
+  }, [title, description]);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormValues(prevValues => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSave({ title, description });
+    onSave(formValues);
     onClose();
   };
 
@@ -55,7 +62,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
         },
       }}
     >
-      <DialogTitle>Add Tasks</DialogTitle>
+      <DialogTitle>{heading}</DialogTitle>
       <DialogContent>
         <TextField
           margin="dense"
@@ -65,8 +72,8 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
           type="text"
           fullWidth
           variant="standard"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={formValues.title} // Correctly bind to formValues
+          onChange={handleChange}
         />
         <TextField
           margin="dense"
@@ -76,8 +83,8 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
           type="text"
           fullWidth
           variant="standard"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={formValues.description} // Correctly bind to formValues
+          onChange={handleChange}
         />
       </DialogContent>
       <DialogActions>
@@ -88,4 +95,4 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
   );
 };
 
-export default Dialogs;
+export default Dialogedit;

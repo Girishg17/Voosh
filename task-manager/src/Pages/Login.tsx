@@ -11,7 +11,8 @@ import {
   SignupButton, 
   LoginLink 
 } from '../Components/styles';
-import { login, register } from '../utils/api';
+import { login, register, googleLogin } from '../utils/api';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login: React.FC = () => {
   const [activeButton, setActiveButton] = useState('login');
@@ -40,8 +41,8 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     try {
       const data = await login(email, password);
-      console.log("login token",data.token);
-      console.log("login userid",data.id);
+      console.log("login token", data.token);
+      console.log("login userid", data.id);
       localStorage.setItem('token', data.token);
       localStorage.setItem('userid', data.id);
       navigate('/home');
@@ -57,10 +58,9 @@ const Login: React.FC = () => {
     }
 
     try {
-      
-      const data = await register(name,secondName,email, password);
-      console.log("signup token",data.token);
-      console.log("signuop userid",data.id);
+      const data = await register(name, secondName, email, password);
+      console.log("signup token", data.token);
+      console.log("signup userid", data.id);
       localStorage.setItem('token', data.token);
       localStorage.setItem('userid', data.id);
       navigate('/home');
@@ -68,6 +68,25 @@ const Login: React.FC = () => {
       setError(err.message);
     }
   };
+
+  const handleGoogleSuccess = async (response: any) => {
+    try {
+      const { credential } = response;
+      // Call your backend with the Google token to authenticate or register the user
+      const data = await googleLogin(credential);
+      console.log(data)
+      console.log("google token", data.token);
+      console.log("google userid", data.id);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userid', data.id);
+      navigate('/home');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+  const handleError=()=>{
+    console.log("error");
+  }
 
   return (
     <div>
@@ -114,7 +133,12 @@ const Login: React.FC = () => {
                 Signup
               </SignupLink>
             </Box>
-            <GoogleButton variant="contained">Login with Google</GoogleButton>
+            <GoogleLogin 
+              onSuccess={handleGoogleSuccess} 
+              onError={handleError}
+              useOneTap
+            />
+            
           </LoginCard>
         </Container>
       ) : (
@@ -168,7 +192,11 @@ const Login: React.FC = () => {
                 Login
               </LoginLink>
             </Box>
-            <GoogleButton variant="contained">Signup with Google</GoogleButton>
+            <GoogleLogin 
+              onSuccess={handleGoogleSuccess} 
+              useOneTap
+              onError={handleError}
+            />
           </SignupCard>
         </Container>
       )}

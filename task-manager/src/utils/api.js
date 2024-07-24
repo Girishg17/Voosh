@@ -24,9 +24,7 @@ export const register = async (name,secondName,email, password) => {
 
 export const saveTask = async (userId, column, task) => {
   try {
-    console.log("its calling save task with ",task)
     const response = await axios.post(`${API_URL}/${userId}`, { column, task });
-    console.log(response);
     return response.data;
   } catch (error) {
     throw new Error(error.response.data.message || 'Error saving task');
@@ -43,9 +41,10 @@ export const fetchTasks = async (userId) => {
 };
 
 
-export const updateTasks = async (userId, tasks) => {
+export const updateTasks = async (userId, tasks, taskId) => {
   try {
-    const response = await axios.put(`${API_URL}/${userId}/tasks`, { tasks });
+    console.log("tasks in updateTask",tasks);
+    const response = await axios.put(`${API_URL}/${userId}/update`, { tasks ,taskId});
     return response.data;
   } catch (error) {
     throw new Error(error.response.data.message || 'Failed to update tasks');
@@ -60,5 +59,26 @@ export const deleteTask = async (userId, taskId) => {
   } catch (error) {
     console.error('Error deleting task:', error);
     throw error;
+  }
+};
+
+export const puttsask = async (userId, column, task) => {
+  try {
+    await axios.put(`${API_URL}/${userId}/tasks/${task.id}`, {
+      column,
+      task,
+    });
+  } catch (error) {
+    console.error('Error saving task:', error);
+    throw error;
+  }
+};
+
+export const googleLogin = async (token) => {
+  try {
+    const response = await axios.post(`${API_URL}/api/auth/google`, { token });
+    return response.data;
+  } catch (error) {
+    throw new Error('Failed to login with Google');
   }
 };
