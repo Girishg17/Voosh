@@ -52,6 +52,6 @@ This ToDo App allows users to manage their tasks efficiently with features such 
   npm start
 ```
 
-## This Porojec is   also deployed in Netlify :
+## This Porojec is   also deployed in Netlify  for FronteEnd & Backend in Render:
    [link: https://playful-chimera-9b793b.netlify.app/]
 
