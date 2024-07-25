@@ -7,7 +7,6 @@ import { AddTaskButton, CardContainer } from '../Components/styles';
 import DialogViews from '../Components/DialogView';
 import { deleteTask, edittask, fetchTasks, puttsask, saveTask, updateTasks } from '../utils/api';
 import Dialogedit from '../Components/Dialogedit';
-import { title } from 'process';
 import SnackbarComponent from '../Components/SnackBar';
 
 
@@ -66,7 +65,11 @@ const Home: React.FC = () => {
   };
 
   const handleSave = async (data: { title: string; description: string }) => {
-    console.log("handle save with string", data.title);
+    if(!data.title|| data.title==' '){
+      setMsg("Title is Mandatory");
+      setErr(true);
+      return;
+    }
     const userId = localStorage.getItem('userid');
     if (!userId) {
 

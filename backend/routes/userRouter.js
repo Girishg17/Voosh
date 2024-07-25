@@ -1,10 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client('YOUR_GOOGLE_CLIENT_ID');
+const client = new OAuth2Client(process.env.GOOGLE_API);
 
 // User registration
 router.post('/register', async (req, res) => {
@@ -198,7 +199,7 @@ router.post('/api/auth/google', async (req, res) => {
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: GOOGLE_API,
+      audience: process.env.GOOGLE_API,
     });
 
     const payload = ticket.getPayload();
