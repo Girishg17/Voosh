@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'https://todobackend-2610.onrender.com/api/users';
-
+const API_URL = 'http://localhost:5000/api/users';
+//use for connecting deployment server https://todobackend-2610.onrender.com  instead of http://localhost:5000
 
 export const login = async (email, password) => {
   try {
