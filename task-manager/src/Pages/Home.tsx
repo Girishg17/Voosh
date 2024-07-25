@@ -14,7 +14,9 @@ type Task = {
   id: string;
   title: string;
   description: string;
+  createdAt: string; // Add createdAt field
 };
+
 
 type TaskColumns = {
   [key: string]: Task[];
@@ -57,57 +59,44 @@ const Home: React.FC = () => {
   };
 
   const handleSave = async (data: { title: string; description: string }) => {
-    console.log("handle save with srrnng",data.title);
+    console.log("handle save with string", data.title);
     const userId = localStorage.getItem('userid');
     if (!userId) {
       console.error('User ID not found');
       return;
     }
-
-    const newTask = { id:  Date.now().toString(), title: data.title, description: data.description };
-
-
+  
+    const newTask = { 
+      id: Date.now().toString(), 
+      title: data.title, 
+      description: data.description,
+      createdAt: new Date().toISOString() // Add createdAt
+    };
+  
     try {
-        await saveTask(userId, 'TODO', newTask);
-        setTasks(prevTasks => ({ ...prevTasks, 'TODO': [...prevTasks['TODO'], newTask] }));
-      // }
-
+      await saveTask(userId, 'TODO', newTask);
+      setTasks(prevTasks => ({ ...prevTasks, 'TODO': [...prevTasks['TODO'], newTask] }));
       handleCloseDialog();
     } catch (error) {
       console.error('Error saving task:', error);
     }
     setDialogData(null);
   };
+  
 
   const handleSortChange = (event: SelectChangeEvent<string>) => {
     setSortOption(event.target.value);
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, item: Task) => {
+    console.log("hamdle drag start");
     e.dataTransfer.setData('text/plain', item.id);
   };
 
-  // const handleDrop = (e: React.DragEvent<HTMLDivElement>, column: string) => {
-  //   const itemId = e.dataTransfer.getData('text/plain');
-  //   if (!itemId) return;
 
-  //   const draggedItem = Object.values(tasks).flat().find(task => task.id === itemId);
-  //   if (!draggedItem) return;
-
-  //   const updatedTasks = { ...tasks };
-  //   Object.keys(updatedTasks).forEach(key => {
-  //     updatedTasks[key] = updatedTasks[key].filter(task => task.id !== itemId);
-  //   });
-  //   updatedTasks[column].push(draggedItem);
-  //   setTasks(updatedTasks);
-  //   console.log("column",column);
-  //   const userId = localStorage.getItem('userid');
-  //   console.log("dragged draggeditem",draggedItem);
-  //   // saveTask(userId, column, draggedItem);
-    
-  // };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>, column: string) => {
+    console.log("handle drop",column);
     const itemId = e.dataTransfer.getData('text/plain');
     if (!itemId) return;
   
@@ -181,6 +170,20 @@ const Home: React.FC = () => {
     setedit(true);
   };
 
+  const formatDateTime = (dateString: string): string => {
+    const date = new Date(dateString);
+  
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+  
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+    return `${day}/${month}/${year},${hours}:${minutes}:${seconds}`;
+  };
+  
 
 
   useEffect(() => {
@@ -230,7 +233,6 @@ const Home: React.FC = () => {
       <Dialogedit open={edit} onClose={()=>{setedit(false)}} onSave={ handleSaveEdit} heading='Edit Task' title={dialogData?.title} description={dialogData?.description}/>
 
       <DialogViews open={dialogview} heading='Task Details' title={dialogData?.title} description={dialogData?.description} onClose={handleCloseDialogView} />
-      {/* <Dialogedit open={} /> */}
       <CardContainer>
         <Card>
           <CardContent>
@@ -291,11 +293,15 @@ const Home: React.FC = () => {
                 <CardContent>
                   <Box display="flex" flexDirection="column" sx={{ height: '100%' }}>
                     <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ flex: 1 }}>{task.title}</Typography>
+                      <Typography variant="h6" sx={{ flex: 1 }}>{task.title}</Typography>
                     </Box>
 
                     <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ flex: 1 }}>{task.description}</Typography>
+                      <Typography variant="body1" sx={{ flex: 1 }}>Description: {task.description}</Typography>
+                    </Box>
+
+                    <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ flex: 1 }}>Created At: {formatDateTime(task.createdAt)}</Typography>
                     </Box>
                     <Box
                       display="flex"
