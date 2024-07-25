@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/users';
-const API_TASK= 'http://localhost:5000/api/tasks';
+const API_URL = 'https://todobackend-2610.onrender.com/api/users';
+
 
 export const login = async (email, password) => {
   try {
