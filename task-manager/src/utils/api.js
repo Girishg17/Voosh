@@ -82,3 +82,17 @@ export const googleLogin = async (token) => {
     throw new Error('Failed to login with Google');
   }
 };
+
+export const edittask = async (taskId, userId, title, description) => {
+  try {
+    console.log("edit task");
+    await axios.put(`${API_URL}/${userId}/edit`, {
+      title,
+      description,
+      taskId
+    });
+  } catch (error) {
+    console.error('Error saving task:', error);
+    throw error;
+  }
+};

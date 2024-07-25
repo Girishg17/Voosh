@@ -5,8 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import Dialogs from '../Components/Dialog';
 import { AddTaskButton, CardContainer } from '../Components/styles';
 import DialogViews from '../Components/DialogView';
-import { deleteTask, fetchTasks, puttsask, saveTask, updateTasks } from '../utils/api';
+import { deleteTask, edittask, fetchTasks, puttsask, saveTask, updateTasks } from '../utils/api';
 import Dialogedit from '../Components/Dialogedit';
+import { title } from 'process';
 
 
 // Define types for tasks
@@ -36,6 +37,8 @@ const Home: React.FC = () => {
   const [dialogData, setDialogData] = useState<{ title: string; description: string } | null>(null);
   const [dialogview, setDialogView] = useState(false);
   const [edit,setedit]=useState(false);
+  const [editid,setEditId]=useState('');
+
 
   const navigate = useNavigate();
 
@@ -51,6 +54,7 @@ const Home: React.FC = () => {
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
+    setDialogData(null);
   };
 
   const handleCloseDialogView = () => {
@@ -155,14 +159,40 @@ const Home: React.FC = () => {
       setDialogView(true);
     }
   };
-  const handleSaveEdit=(data: { title: string; description: string })=>{
+  const handleSaveEdit=async (data: { title: string; description: string })=>{
+    console.log("data",data);
     setDialogData({ title:data.title, description: data.description });
     setedit(false);
+  
+   
     
-    console.log("on save edit",data.title);
+    let task: Task | undefined;
+    let column: string ;
+    for (const [col, tasksInCol] of Object.entries(tasks)) {
+      const foundTask = tasksInCol.find(t => t.id === editid);
+      if (foundTask) {
+        task = foundTask;
+        column = col;
+        break;
+      }
+    }
+   try {
+      const userId = localStorage.getItem('userid');
+      console.log("sending updated title and description",data?.title,data?.description);
+      await edittask(editid,userId,data?.title,data?.description);
+      setTasks(prevTasks => ({
+        ...prevTasks,
+        [column]: prevTasks[column].map(t => t.id === editid ? { ...t, title: data.title, description: data.description } : t)
+      }));
+    }
+    catch{
+      console.log("eerror updating");
+    }
+    setDialogData(null);
   }
 
   const handleEdit = (id: string) => {
+    setEditId(id);
     const task = Object.values(tasks).flat().find(t => t.id === id);
     if (task) {
       setDialogData({ title: task.title, description: task.description });

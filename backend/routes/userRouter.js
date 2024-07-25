@@ -165,7 +165,6 @@ router.delete('/:userId/tasks/:taskId', async (req, res) => {
 router.put('/:userId/tasks/:taskId', async (req, res) => {
   const { userId, taskId } = req.params;
   let { column, task } = req.body;
- console.log("updated column",task);
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).send('User not found');
@@ -235,5 +234,55 @@ router.post('/api/auth/google', async (req, res) => {
     res.status(400).send('Invalid Google token');
   }
 });
+
+router.put('/:userId/edit', async (req, res) => {
+  const { userId } = req.params;
+  const { title, description,taskId } = req.body;
+  console.log("title at backend",title,"description at backend",description);
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).send('User not found');
+
+    // Ensure each column is an array
+    if (!user.tasks) {
+      user.tasks = {
+        'TODO': [],
+        'INPROGRESS': [],
+        'DONE': [],
+      };
+    } else {
+      Object.keys(user.tasks).forEach(key => {
+        if (!Array.isArray(user.tasks[key])) {
+          user.tasks[key] = [];
+        }
+      });
+    }
+
+    // Find and update the task in the correct column
+    let taskUpdated = false;
+    Object.keys(user.tasks).forEach(key => {
+      user.tasks[key] = user.tasks[key].map(task => {
+        if (task.id === taskId) {
+          taskUpdated = true;
+          return { ...task, title, description };
+        }
+        return task;
+      });
+    });
+
+    if (!taskUpdated) {
+      // If the task was not found and updated, respond with an error
+      return res.status(404).send('Task not found');
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Task updated successfully' });
+  } catch (err) {
+    console.error('Error updating task:', err);
+    res.status(500).send(err.message);
+  }
+});
+
 
 module.exports = router;

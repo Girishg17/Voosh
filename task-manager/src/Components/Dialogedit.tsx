@@ -42,6 +42,7 @@ const Dialogedit: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, ti
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("form valued",formValues);
     onSave(formValues);
     onClose();
   };
