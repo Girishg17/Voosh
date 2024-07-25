@@ -8,7 +8,6 @@ const client = new OAuth2Client('YOUR_GOOGLE_CLIENT_ID');
 
 // User registration
 router.post('/register', async (req, res) => {
-    console.log("request is coming");
     
   const { name,secondName, email, password } = req.body;
   try {
@@ -59,33 +58,28 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
+//save task
 router.post('/:userId', async (req, res) => {
   try {
     const { column, task } = req.body;
     
-    // Ensure column and task are provided
     if (!column || !task) {
       return res.status(400).send('Column and task data must be provided');
     }
 
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).send('User not found');
-
-    console.log("Current Tasks in Column", user.tasks[column]);
-
-    // Ensure the column exists
+    
     if (!user.tasks[column]) {
       user.tasks[column] = [];
     }
 
-    // Validate task format and remove old ID field if present
-    const { _id, ...taskWithoutId } = task; // Remove existing _id if present
+   
+    const { _id, ...taskWithoutId } = task; 
     user.tasks[column].push(taskWithoutId);
 
     await user.save();
 
-    // Return the updated task as response
     res.status(201).json(taskWithoutId);
   } catch (err) {
     console.error('Error saving task:', err);
@@ -93,7 +87,7 @@ router.post('/:userId', async (req, res) => {
   }
 });
 
-
+//get all tasks
 router.get('/:userId/tasks', async (req, res) => {
   try {
     
@@ -105,11 +99,10 @@ router.get('/:userId/tasks', async (req, res) => {
     res.status(500).send(err.message);
   }
 });
-
+//update task draggging
 router.put('/:userId/update', async (req, res) => {
   try {
     const { taskId, updatedTask, column } = req.body;
-    console.log("Updating Task", { taskId, updatedTask, column });
 
     const user = await User.findById(req.params.userId);
     if (!user) return res.status(404).send('User not found');
@@ -118,15 +111,12 @@ router.put('/:userId/update', async (req, res) => {
       return res.status(400).send('Invalid column');
     }
 
-    // Find and update the specific task in the column
     const taskIndex = user.tasks[column].findIndex(task => task.id === taskId);
     if (taskIndex === -1) return res.status(404).send('Task not found');
 
-    // Update task details
     user.tasks[column][taskIndex] = { ...user.tasks[column][taskIndex], ...updatedTask };
 
     await user.save();
-    console.log("After Update", user.tasks);
     res.status(200).json(user.tasks);
   } catch (err) {
     console.error('Error updating task:', err);
@@ -134,6 +124,7 @@ router.put('/:userId/update', async (req, res) => {
   }
 });
 
+//delete task
 router.delete('/:userId/tasks/:taskId', async (req, res) => {
   const { userId, taskId } = req.params;
   console.log("Deleting task:", { userId, taskId });
@@ -142,10 +133,6 @@ router.delete('/:userId/tasks/:taskId', async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).send('User not found');
 
-    // Debugging: Check user.tasks structure
-    console.log("Current tasks:", user.tasks);
-
-    // Ensure each column is an array
     for (let column of Object.keys(user.tasks)) {
       if (Array.isArray(user.tasks[column])) {
         user.tasks[column] = user.tasks[column].filter(task => task.id !== taskId);
@@ -161,7 +148,7 @@ router.delete('/:userId/tasks/:taskId', async (req, res) => {
     res.status(500).send(err.message);
   }
 });
-
+//update edited task
 router.put('/:userId/tasks/:taskId', async (req, res) => {
   const { userId, taskId } = req.params;
   let { column, task } = req.body;
@@ -169,7 +156,7 @@ router.put('/:userId/tasks/:taskId', async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).send('User not found');
 
-    // Ensure each column is an array
+   
     if (!user.tasks) {
       user.tasks = {
         'TODO': [],
@@ -195,7 +182,6 @@ router.put('/:userId/tasks/:taskId', async (req, res) => {
     if (!user.tasks[column]) {
       user.tasks[column] = [];
     }
-    console.log(task);
     user.tasks[column].push(task);
 
     await user.save();
@@ -205,7 +191,7 @@ router.put('/:userId/tasks/:taskId', async (req, res) => {
     res.status(500).send(err.message);
   }
 });
-
+//google
 router.post('/api/auth/google', async (req, res) => {
   const { token } = req.body;
 
@@ -228,23 +214,22 @@ router.post('/api/auth/google', async (req, res) => {
       await user.save();
     }
 
-    const jwtToken = generateToken(user); // Implement this function to generate JWT
+    const jwtToken = generateToken(user); 
     res.json({ token: jwtToken, id: user._id });
   } catch (error) {
     res.status(400).send('Invalid Google token');
   }
 });
-
+//update edit tasks
 router.put('/:userId/edit', async (req, res) => {
   const { userId } = req.params;
   const { title, description,taskId } = req.body;
-  console.log("title at backend",title,"description at backend",description);
 
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).send('User not found');
 
-    // Ensure each column is an array
+    
     if (!user.tasks) {
       user.tasks = {
         'TODO': [],
@@ -259,7 +244,7 @@ router.put('/:userId/edit', async (req, res) => {
       });
     }
 
-    // Find and update the task in the correct column
+    
     let taskUpdated = false;
     Object.keys(user.tasks).forEach(key => {
       user.tasks[key] = user.tasks[key].map(task => {
@@ -272,14 +257,12 @@ router.put('/:userId/edit', async (req, res) => {
     });
 
     if (!taskUpdated) {
-      // If the task was not found and updated, respond with an error
       return res.status(404).send('Task not found');
     }
 
     await user.save();
     res.status(200).json({ message: 'Task updated successfully' });
   } catch (err) {
-    console.error('Error updating task:', err);
     res.status(500).send(err.message);
   }
 });

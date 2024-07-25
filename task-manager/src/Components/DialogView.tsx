@@ -33,9 +33,9 @@ const DialogViews: React.FC<DialogsProps> = ({ open, onClose, heading, title = '
       onClose={onClose}
       sx={{
         '& .MuiDialog-paper': {
-          width: '500px', // Adjust width
-          height: '400px', // Adjust height
-          maxWidth: 'none', // Ensure the width is not restricted by the maxWidth property
+          width: '500px', 
+          height: '400px', 
+          maxWidth: 'none', 
         },
       }}
       

@@ -25,7 +25,7 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
 
-  // Reset form values when dialog is opened
+ 
   React.useEffect(() => {
     if (open) {
       setTitle('');
@@ -49,9 +49,9 @@ const Dialogs: React.FC<DialogsProps> = ({ open, onClose, onSave }) => {
       }}
       sx={{
         '& .MuiDialog-paper': {
-          width: '500px', // Adjust width
-          height: '400px', // Adjust height
-          maxWidth: 'none', // Ensure the width is not restricted by the maxWidth property
+          width: '500px', 
+          height: '400px', 
+          maxWidth: 'none', 
         },
       }}
     >

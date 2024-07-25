@@ -13,7 +13,7 @@ const SnackbarComponent: React.FC<SnackbarComponentProps> = ({ open, message, on
     if (open) {
       const timer = setTimeout(() => {
         onClose();
-      }, 3000); // Snackbar will close after 3 seconds
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [open, onClose]);

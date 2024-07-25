@@ -27,7 +27,7 @@ const CustomButton = styled(Button)(({ theme }) => ({
 const Dialogedit: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, title = '', description = '' }) => {
   const [formValues, setFormValues] = React.useState({title  ,description});
 
-  // Update form values when props change
+
   React.useEffect(() => {
     setFormValues({ title, description });
   }, [title, description]);
@@ -57,9 +57,9 @@ const Dialogedit: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, ti
       }}
       sx={{
         '& .MuiDialog-paper': {
-          width: '500px', // Adjust width
-          height: '400px', // Adjust height
-          maxWidth: 'none', // Ensure the width is not restricted by the maxWidth property
+          width: '500px', 
+          height: '400px', 
+          maxWidth: 'none', 
         },
       }}
     >
@@ -73,7 +73,7 @@ const Dialogedit: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, ti
           type="text"
           fullWidth
           variant="standard"
-          value={formValues.title} // Correctly bind to formValues
+          value={formValues.title} 
           onChange={handleChange}
         />
         <TextField
@@ -84,7 +84,7 @@ const Dialogedit: React.FC<DialogsProps> = ({ open, onClose, onSave, heading, ti
           type="text"
           fullWidth
           variant="standard"
-          value={formValues.description} // Correctly bind to formValues
+          value={formValues.description} 
           onChange={handleChange}
         />
       </DialogContent>

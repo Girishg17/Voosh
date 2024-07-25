@@ -11,12 +11,12 @@ import { title } from 'process';
 import SnackbarComponent from '../Components/SnackBar';
 
 
-// Define types for tasks
+
 type Task = {
   id: string;
   title: string;
   description: string;
-  createdAt: string; // Add createdAt field
+  createdAt: string; 
 };
 
 
@@ -24,7 +24,7 @@ type TaskColumns = {
   [key: string]: Task[];
 };
 
-// Initial data
+
 const initialData: TaskColumns = {
   'TODO': [],
   'INPROGRESS': [],
@@ -203,7 +203,7 @@ const Home: React.FC = () => {
     const date = new Date(dateString);
 
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const year = date.getFullYear();
 
     const hours = String(date.getHours()).padStart(2, '0');
