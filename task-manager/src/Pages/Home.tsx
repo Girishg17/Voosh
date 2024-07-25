@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SelectChangeEvent, Card, CardContent, Box, Typography, Button } from '@mui/material';
+import { SelectChangeEvent, Card, CardContent, Box, Typography, Button, Snackbar } from '@mui/material';
 import Navbar from '../Components/NavBar';
 import { useNavigate } from 'react-router-dom';
 import Dialogs from '../Components/Dialog';
@@ -8,6 +8,7 @@ import DialogViews from '../Components/DialogView';
 import { deleteTask, edittask, fetchTasks, puttsask, saveTask, updateTasks } from '../utils/api';
 import Dialogedit from '../Components/Dialogedit';
 import { title } from 'process';
+import SnackbarComponent from '../Components/SnackBar';
 
 
 // Define types for tasks
@@ -36,8 +37,10 @@ const Home: React.FC = () => {
   const [tasks, setTasks] = useState<TaskColumns>(initialData);
   const [dialogData, setDialogData] = useState<{ title: string; description: string } | null>(null);
   const [dialogview, setDialogView] = useState(false);
-  const [edit,setedit]=useState(false);
-  const [editid,setEditId]=useState('');
+  const [edit, setedit] = useState(false);
+  const [editid, setEditId] = useState('');
+  const [err, setErr] = useState(false);
+  const [msg, setMsg] = useState('');
 
 
   const navigate = useNavigate();
@@ -66,30 +69,26 @@ const Home: React.FC = () => {
     console.log("handle save with string", data.title);
     const userId = localStorage.getItem('userid');
     if (!userId) {
-      console.error('User ID not found');
+
       return;
     }
-  
-    const newTask = { 
-      id: Date.now().toString(), 
-      title: data.title, 
+
+    const newTask = {
+      id: Date.now().toString(),
+      title: data.title,
       description: data.description,
-      createdAt: new Date().toISOString() // Add createdAt
+      createdAt: new Date().toISOString() 
     };
-  
+
     try {
       await saveTask(userId, 'TODO', newTask);
       setTasks(prevTasks => ({ ...prevTasks, 'TODO': [...prevTasks['TODO'], newTask] }));
       handleCloseDialog();
     } catch (error) {
-      console.error('Error saving task:', error);
+      setMsg("Error While Saving");
+      setErr(true);
     }
     setDialogData(null);
-  };
-  
-
-  const handleSortChange = (event: SelectChangeEvent<string>) => {
-    setSortOption(event.target.value);
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, item: Task) => {
@@ -100,38 +99,36 @@ const Home: React.FC = () => {
 
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>, column: string) => {
-    console.log("handle drop",column);
+    console.log("handle drop", column);
     const itemId = e.dataTransfer.getData('text/plain');
     if (!itemId) return;
-  
+
     const draggedItem = Object.values(tasks).flat().find(task => task.id === itemId);
     if (!draggedItem) return;
-  
+
     const updatedTasks = { ...tasks };
     Object.keys(updatedTasks).forEach(key => {
       updatedTasks[key] = updatedTasks[key].filter(task => task.id !== itemId);
     });
     updatedTasks[column].push(draggedItem);
     setTasks(updatedTasks);
-  
+
     const userId = localStorage.getItem('userid');
     if (!userId) {
-      console.error('User ID not found');
       return;
     }
-  
+
     const updatedTask = { ...draggedItem, column };
-    
+
     try {
       await puttsask(userId, column, updatedTask);
     } catch (error) {
-      console.error('Error updating task on the backend:', error);
+      setMsg('Error while draggging');
+      setErr(true);
     }
-    
-    console.log("Dragged item updated:", updatedTask);
   };
-  
-  
+
+
 
   const handleDelete = async (id: string) => {
     const userId = localStorage.getItem('userid');
@@ -148,7 +145,8 @@ const Home: React.FC = () => {
       });
       setTasks(updatedTasks);
     } catch (error) {
-      console.error('Error deleting task:', error);
+      setMsg('Error while deleting the task');
+      setErr(true);
     }
   };
 
@@ -159,15 +157,15 @@ const Home: React.FC = () => {
       setDialogView(true);
     }
   };
-  const handleSaveEdit=async (data: { title: string; description: string })=>{
-    console.log("data",data);
-    setDialogData({ title:data.title, description: data.description });
+  const handleSaveEdit = async (data: { title: string; description: string }) => {
+    console.log("data", data);
+    setDialogData({ title: data.title, description: data.description });
     setedit(false);
-  
-   
-    
+
+
+
     let task: Task | undefined;
-    let column: string ;
+    let column: string;
     for (const [col, tasksInCol] of Object.entries(tasks)) {
       const foundTask = tasksInCol.find(t => t.id === editid);
       if (foundTask) {
@@ -176,17 +174,18 @@ const Home: React.FC = () => {
         break;
       }
     }
-   try {
+    try {
       const userId = localStorage.getItem('userid');
-      console.log("sending updated title and description",data?.title,data?.description);
-      await edittask(editid,userId,data?.title,data?.description);
+      console.log("sending updated title and description", data?.title, data?.description);
+      await edittask(editid, userId, data?.title, data?.description);
       setTasks(prevTasks => ({
         ...prevTasks,
         [column]: prevTasks[column].map(t => t.id === editid ? { ...t, title: data.title, description: data.description } : t)
       }));
     }
-    catch{
-      console.log("eerror updating");
+    catch {
+      setMsg('Error while updating the edit');
+      setErr(true);
     }
     setDialogData(null);
   }
@@ -202,25 +201,28 @@ const Home: React.FC = () => {
 
   const formatDateTime = (dateString: string): string => {
     const date = new Date(dateString);
-  
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
     const year = date.getFullYear();
-  
+
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-  
+
     return `${day}/${month}/${year},${hours}:${minutes}:${seconds}`;
   };
-  
+  const snackBarClose = () => {
+    setErr(false);
+    setMsg('');
+  }
 
 
   useEffect(() => {
     const loadTasks = async () => {
       const userId = localStorage.getItem('userid');
       if (!userId) {
-        console.error('User ID not found');
+
         return;
       }
 
@@ -231,10 +233,11 @@ const Home: React.FC = () => {
           'INPROGRESS': Array.isArray(fetchedTasks['INPROGRESS']) ? fetchedTasks['INPROGRESS'] : [],
           'DONE': Array.isArray(fetchedTasks['DONE']) ? fetchedTasks['DONE'] : [],
         };
-        
+
         setTasks(formattedTasks);
       } catch (error) {
-        console.error('Error fetching tasks:', error);
+        setMsg('Error while fething your task');
+        setErr(true);
       }
     };
 
@@ -258,9 +261,9 @@ const Home: React.FC = () => {
         open={dialogOpen}
         onClose={handleCloseDialog}
         onSave={handleSave}
-  
+
       />
-      <Dialogedit open={edit} onClose={()=>{setedit(false)}} onSave={ handleSaveEdit} heading='Edit Task' title={dialogData?.title} description={dialogData?.description}/>
+      <Dialogedit open={edit} onClose={() => { setedit(false) }} onSave={handleSaveEdit} heading='Edit Task' title={dialogData?.title} description={dialogData?.description} />
 
       <DialogViews open={dialogview} heading='Task Details' title={dialogData?.title} description={dialogData?.description} onClose={handleCloseDialogView} />
       <CardContainer>
@@ -284,7 +287,7 @@ const Home: React.FC = () => {
         </Card>
       </CardContainer>
 
-      
+
 
       <Box display="flex" justifyContent="space-between" boxShadow={3} sx={{ padding: '10px' }}>
         {Object.keys(tasks).map((column) => (
@@ -370,6 +373,7 @@ const Home: React.FC = () => {
           </Box>
         ))}
       </Box>
+      <SnackbarComponent open={err} message={msg} onClose={snackBarClose} />
     </div>
   );
 };

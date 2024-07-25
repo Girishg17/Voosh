@@ -1,30 +1,32 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../Components/NavBar';
 import { Container, TextField, Typography, Box, Button } from '@mui/material';
-import { 
-  LoginCard, 
-  LoginButton, 
-  GoogleButton, 
-  SignupLink, 
-  SignupCard, 
-  SignupButton, 
-  LoginLink 
+import {
+  LoginCard,
+  LoginButton,
+  GoogleButton,
+  SignupLink,
+  SignupCard,
+  SignupButton,
+  LoginLink
 } from '../Components/styles';
 import { login, register, googleLogin } from '../utils/api';
 import { GoogleLogin } from '@react-oauth/google';
+import SnackbarComponent from '../Components/SnackBar';
 
 const Login: React.FC = () => {
   const [activeButton, setActiveButton] = useState('login');
   const [loginButtonColor, setLoginButtonColor] = useState('white');
   const [signupButtonColor, setSignupButtonColor] = useState('blue');
   const [error, setError] = useState('');
+  const [iserr, setiserr] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [secondName, setSecondName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleLoginClick = () => {
     setActiveButton('login');
@@ -47,7 +49,8 @@ const Login: React.FC = () => {
       localStorage.setItem('userid', data.id);
       navigate('/home');
     } catch (err: any) {
-      setError(err.message);
+      setError('You May not Have account Do SignUp');
+      setiserr(true);
     }
   };
 
@@ -65,14 +68,14 @@ const Login: React.FC = () => {
       localStorage.setItem('userid', data.id);
       navigate('/home');
     } catch (err: any) {
-      setError(err.message);
+      setError('All fields are Mandatory');
+      setiserr(true);
     }
   };
 
   const handleGoogleSuccess = async (response: any) => {
     try {
       const { credential } = response;
-      // Call your backend with the Google token to authenticate or register the user
       const data = await googleLogin(credential);
       console.log(data)
       console.log("google token", data.token);
@@ -81,12 +84,18 @@ const Login: React.FC = () => {
       localStorage.setItem('userid', data.id);
       navigate('/home');
     } catch (err: any) {
-      setError(err.message);
+      setError('Its authorised for certain Gmail Account');
+      setiserr(true);
     }
   };
-  const handleError=()=>{
+  const handleError = () => {
     console.log("error");
   }
+  const snackBarClose = () => {
+    setError('');
+    setiserr(false);
+  }
+
 
   return (
     <div>
@@ -133,12 +142,12 @@ const Login: React.FC = () => {
                 Signup
               </SignupLink>
             </Box>
-            <GoogleLogin 
-              onSuccess={handleGoogleSuccess} 
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
               onError={handleError}
               useOneTap
             />
-            
+
           </LoginCard>
         </Container>
       ) : (
@@ -192,14 +201,15 @@ const Login: React.FC = () => {
                 Login
               </LoginLink>
             </Box>
-            <GoogleLogin 
-              onSuccess={handleGoogleSuccess} 
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
               useOneTap
               onError={handleError}
             />
           </SignupCard>
         </Container>
       )}
+      <SnackbarComponent open={iserr} message={error} onClose={snackBarClose} />
     </div>
   );
 };
